@@ -1,0 +1,38 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: sample-frontend-canary
+spec:
+  selector:
+    app: sample-frontend-canary
+  replicas: 1
+  template:
+    metadata:
+      name: frontend
+      labels:
+        app: sample
+        role: frontend
+        env: canary
+    spec:
+      containers:
+      - name: frontend
+        image: gcr.io/rd-test-paul/sample-app
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "100m"
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+        env:
+        - name: COMPONENT
+          value: frontend
+        - name: BACKEND_URL
+          value: http://sample-backend-canary:8080/metadata
+        - name: VERSION
+          value: canary
+        ports:
+        - name: frontend
+          containerPort: 8080
